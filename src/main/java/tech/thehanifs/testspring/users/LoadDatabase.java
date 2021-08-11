@@ -14,9 +14,7 @@ public class LoadDatabase {
     @Bean
     CommandLineRunner initDatabase(UserRepository repository) {
         User userAdmin = repository.findByUsername(Config.adminUsername);
-        if (userAdmin == null) return args -> {
-            logger.info("Preloading " + repository.save(new User(Config.adminName, 1, Config.adminUsername, Config.adminPassword)));
-        };
+        if (userAdmin == null) return args -> logger.info("Preloading " + repository.save(new User(Config.adminName, 1, Config.adminUsername, Config.adminPassword, Config.adminEmail)));
         else return args -> {
             logger.info("Admin user has exist! Credentials already in config");
         };

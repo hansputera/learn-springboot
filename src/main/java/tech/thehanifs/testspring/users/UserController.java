@@ -11,11 +11,13 @@ import tech.thehanifs.testspring.exception.UserNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @EnableJdbcHttpSession
 @RestController
+@RequestMapping("/api")
 public class UserController {
     private final UserRepository repository;
 
@@ -37,7 +39,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    User postUser(HttpServletRequest req, @RequestBody User newUser) {
+    User postUser(HttpServletRequest req, @Valid @RequestBody User newUser) {
         HttpSession session = req.getSession();
         User user_session = (User) session.getAttribute("user");
         if (user_session != null) throw new AlreadyLoginException(user_session.getUsername());
@@ -60,6 +62,7 @@ public class UserController {
         User user_session = (User) session.getAttribute("user");
         if (user_session == null) return false;
         else {
+            session.invalidate();
             return true;
         }
     }
