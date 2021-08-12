@@ -1,16 +1,12 @@
 package tech.thehanifs.testspring.users;
 
 import tech.thehanifs.testspring.Util;
-import tech.thehanifs.testspring.annotations.PasswordAnnotation;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.util.Objects;
 
 @Entity
@@ -33,8 +29,8 @@ public class User {
     @NotNull
     @NotEmpty
     @NotBlank(message = "password is required")
-    @PasswordAnnotation.PasswordConstraint
-    private String password;
+    @Pattern(regexp="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W\\_])[A-Za-z\\d\\W\\_]{8,}$")
+    public String password;
 
     @NotNull
     @NotEmpty
@@ -48,7 +44,7 @@ public class User {
         this.name = name;
         this.role = role;
         this.username = username;
-        this.password = Util.encryption_aes256gcm.encrypt(password);
+        this.password = password;
         this.email = email;
     }
 
@@ -64,8 +60,14 @@ public class User {
     public String getUsername() {
         return this.username;
     }
-    public String getPassword(boolean decrypted) throws Exception {
-        return decrypted ? Util.encryption_aes256gcm.decrypt(this.password) : this.password;
+    public String getPassword() {
+        return this.password;
+    }
+    public String getPasswordDecrypted() throws Exception {
+        return Util.encryption_aes256gcm.decrypt(this.password);
+    }
+    public String getEmail() {
+        return this.email;
     }
 
     public void setName(String name) {
@@ -85,6 +87,10 @@ public class User {
             User user = (User) obj;
             return Objects.equals(this.id, user.id) && Objects.equals(this.name, user.name) && Objects.equals(this.role, user.role);
         }
+    }
+
+    public void encryptPassword() throws Exception {
+        this.password = Util.encryption_aes256gcm.encrypt(this.password);
     }
 
     @Override

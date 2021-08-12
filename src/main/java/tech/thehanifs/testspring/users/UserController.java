@@ -1,9 +1,13 @@
 package tech.thehanifs.testspring.users;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import tech.thehanifs.testspring.exception.AccessDeniedException;
 import tech.thehanifs.testspring.exception.AlreadyLoginException;
@@ -20,6 +24,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class UserController {
     private final UserRepository repository;
+    private static final Logger logger = LoggerFactory.getLogger("User Controller");
 
     UserController(UserRepository repository) {
         this.repository = repository;
@@ -39,11 +44,16 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    User postUser(HttpServletRequest req, @Valid @RequestBody User newUser) {
+    String postUser(HttpServletRequest req, @Valid @RequestBody User newUser, Errors error) throws Exception {
         HttpSession session = req.getSession();
         User user_session = (User) session.getAttribute("user");
         if (user_session != null) throw new AlreadyLoginException(user_session.getUsername());
-        return repository.save(newUser);
+        if (error.hasErrors()) {
+            logger.debug(String.valueOf(error.getFieldError()));
+            return "Invalid body";
+        }
+        newUser.encryptPassword();
+        return String.valueOf(repository.save(newUser));
     }
 
     @GetMapping("/users/{id}")

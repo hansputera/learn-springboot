@@ -21,7 +21,7 @@ public class errorController implements ErrorController {
     @ExceptionHandler(Exception.class)
     public String handleError(HttpServletRequest req, HttpServletResponse response, Exception err) throws IOException {
         HttpSession session = req.getSession();
-        response.addHeader("session", session.getId());
+        response.addHeader("session_id", session.getId());
         return err.getMessage();
     }
 }
