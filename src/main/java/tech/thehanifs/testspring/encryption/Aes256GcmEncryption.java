@@ -2,11 +2,11 @@ package tech.thehanifs.testspring.encryption;
 
 import org.apache.commons.codec.binary.Hex;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -32,7 +32,7 @@ public class Aes256GcmEncryption {
         this.key = secretKey;
     }
 
-    public String encrypt(String plainText) throws Exception {
+    public String encrypt(String plainText) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, InvalidKeyException {
         // get cipher
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 

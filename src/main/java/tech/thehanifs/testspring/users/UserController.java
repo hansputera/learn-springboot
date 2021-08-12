@@ -9,6 +9,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import tech.thehanifs.testspring.classes.LoginPayloadClass;
 import tech.thehanifs.testspring.exception.AccessDeniedException;
 import tech.thehanifs.testspring.exception.AlreadyLoginException;
 import tech.thehanifs.testspring.exception.UserNotFoundException;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 
 @EnableJdbcHttpSession
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController {
     private final UserRepository repository;
     private final UserService userService;
@@ -33,7 +34,7 @@ public class UserController {
         this.userService = new UserService(repository);
     }
 
-    @GetMapping("/users")
+    @GetMapping("/")
     CollectionModel<EntityModel<User>> all(HttpServletRequest req) {
         HttpSession session = req.getSession();
         User user_session = (User) session.getAttribute("user");
@@ -46,7 +47,7 @@ public class UserController {
         return CollectionModel.of(users, linkTo(methodOn(UserController.class).all(req)).withSelfRel());
     }
 
-    @PostMapping("/users")
+    @PostMapping("/")
     String postUser(HttpServletRequest req, @Valid @RequestBody User newUser, Errors error) {
         HttpSession session = req.getSession();
         User user_session = (User) session.getAttribute("user");
@@ -58,23 +59,18 @@ public class UserController {
         if (this.repository.findByUsername(newUser.getUsername()) != null || this.repository.findByEmail(newUser.getEmail()) != null) {
             return "Your requesting data already registered";
         }
-        try {
-            boolean successCreated = userService.addUser(
-                    newUser.getName(),
-                    newUser.getPassword(),
-                    newUser.getEmail(),
-                    newUser.getUsername(),
-                    2
-            );
-            if (successCreated) return "Successfuly registered";
-            else return "Fail to register";
-        } catch (Exception err) {
-            logger.error(err.getMessage());
-            return "Something was wrong";
-        }
+        boolean successCreated = userService.addUser(
+                newUser.getName(),
+                newUser.getPassword(),
+                newUser.getEmail(),
+                newUser.getUsername(),
+                2
+        );
+        if (successCreated) return "Successfuly registered";
+        else return "Fail to register";
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     EntityModel<User> getUser(HttpServletRequest req, @PathVariable Long id) {
         HttpSession session = req.getSession();
         User user_session = (User) session.getAttribute("user");
@@ -84,8 +80,27 @@ public class UserController {
         return EntityModel.of(user, linkTo(methodOn(UserController.class).getUser(req, user.getId())).withSelfRel(), linkTo(methodOn(UserController.class).all(req)).withRel("users"));
     }
 
+    @PostMapping("/login")
+    String loginUser(HttpServletRequest req, @Valid @RequestBody LoginPayloadClass loginPayload, Errors error) {
+        HttpSession session = req.getSession();
+        User user_session = (User) session.getAttribute("user");
+        if (user_session != null) throw new AlreadyLoginException(user_session.getUsername());
+        if (error.hasErrors()) {
+            logger.debug(String.valueOf(error.getFieldError()));
+            return "Invalid body";
+        }
+        boolean successLogin = userService.isValidPayload(loginPayload);
+        if (successLogin) {
+            var user = repository.findByUsername(loginPayload.username);
+            if (user == null) user = repository.findByEmail(loginPayload.email);
+            session.setAttribute("user", user);
+            return "Successfuly logged in";
+        } else return "Failed";
+    }
+
+
     @GetMapping("/logout")
-    Boolean logoutUser(HttpServletRequest req) {
+    boolean logoutUser(HttpServletRequest req) {
         HttpSession session = req.getSession();
         User user_session = (User) session.getAttribute("user");
         if (user_session == null) return false;

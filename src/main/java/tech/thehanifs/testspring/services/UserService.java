@@ -1,18 +1,14 @@
 package tech.thehanifs.testspring.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.thehanifs.testspring.classes.LoginPayloadClass;
 import tech.thehanifs.testspring.encryption.BcryptEncryption;
 import tech.thehanifs.testspring.users.User;
 import tech.thehanifs.testspring.users.UserRepository;
 
-import java.util.Locale;
-
 @Service
 public class UserService {
-    private final Logger logger = LoggerFactory.getLogger("User Service");
     @Autowired
     UserRepository userRepository;
 
@@ -28,6 +24,18 @@ public class UserService {
             User user = new User(name, role, username.toLowerCase(), BcryptEncryption.encoder.encode(password), email.toLowerCase());
             userRepository.save(user);
             return true;
+        }
+    }
+
+    public boolean isValidPayload(LoginPayloadClass payload) {
+        if (payload.username == null && payload.email == null && payload.password == null) return false;
+        else if (payload.username != null && payload.email == null) return false;
+        else {
+            var user = userRepository.findByUsername(payload.username);
+            if (user == null) user = userRepository.findByEmail(payload.email);
+
+            if (user == null) return false;
+            else return BcryptEncryption.encoder.matches(payload.password, user.getPassword());
         }
     }
 }
