@@ -10,14 +10,14 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-public class aes256gcm {
+public class Aes256GcmEncryption {
     private final byte[] iv;
     private final SecretKey key;
     private int aes_key_size = 256;
     private int tag_length = 16;
     private int iv_length = 12;
 
-    public aes256gcm() throws NoSuchAlgorithmException {
+    public Aes256GcmEncryption() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(this.aes_key_size);
 

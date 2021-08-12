@@ -1,19 +1,15 @@
 package tech.thehanifs.testspring;
 
-import org.springframework.validation.Errors;
-import tech.thehanifs.testspring.encryption.aes256gcm;
+import tech.thehanifs.testspring.encryption.Aes256GcmEncryption;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class Util {
-    public static aes256gcm encryption_aes256gcm;
+    public static Aes256GcmEncryption encryption_aes256GcmEncryption;
     static {
         try {
-            encryption_aes256gcm = new aes256gcm();
+            encryption_aes256GcmEncryption = new Aes256GcmEncryption();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

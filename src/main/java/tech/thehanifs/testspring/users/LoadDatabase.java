@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tech.thehanifs.testspring.Config;
+import tech.thehanifs.testspring.encryption.BcryptEncryption;
 
 @Configuration
 public class LoadDatabase {
@@ -14,7 +15,7 @@ public class LoadDatabase {
     @Bean
     CommandLineRunner initDatabase(UserRepository repository) {
         User userAdmin = repository.findByUsername(Config.adminUsername);
-        if (userAdmin == null) return args -> logger.info("Preloading " + repository.save(new User(Config.adminName, 1, Config.adminUsername, Config.adminPassword, Config.adminEmail)));
+        if (userAdmin == null) return args -> logger.info("Preloading " + repository.save(new User(Config.adminName, 1, Config.adminUsername, BcryptEncryption.encoder.encode(Config.adminPassword), Config.adminEmail)));
         else return args -> {
             logger.info("Admin user has exist! Credentials already in config");
         };
