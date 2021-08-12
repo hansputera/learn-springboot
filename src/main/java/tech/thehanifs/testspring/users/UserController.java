@@ -57,7 +57,7 @@ public class UserController {
             return "Invalid body";
         }
         if (this.repository.findByUsername(newUser.getUsername()) != null || this.repository.findByEmail(newUser.getEmail()) != null) {
-            return "Your requesting data already registered";
+            return "The data you requested is already registered";
         }
         boolean successCreated = userService.addUser(
                 newUser.getName(),
